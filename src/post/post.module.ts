@@ -4,7 +4,8 @@ import { PostService } from './post.service';
 import { UserModule } from '../user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
+import Redis from 'ioredis';
 
 @Module({
   imports: [
@@ -12,6 +13,15 @@ import { User } from 'src/user/entities/user.entity';
     forwardRef(() => UserModule),
   ],
   controllers: [PostController],
-  providers: [PostService],
+  providers: [
+    PostService,
+    {
+      provide: 'REDIS_CACHE',
+      useFactory: (): Redis => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        return new Redis({ host: 'localhost', port: 6379 });
+      },
+    },
+  ],
 })
 export class PostModule {}
