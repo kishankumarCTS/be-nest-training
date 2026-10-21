@@ -8,17 +8,18 @@ import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { User } from '../user/entities/user.entity';
 import Redis from 'ioredis';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
-
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
     @Inject('REDIS_CACHE') private readonly redis: Redis,
+    @InjectQueue('notifications') private readonly notificationsQueue: Queue,
   ) {}
 
   // CREATE
@@ -37,7 +38,16 @@ export class PostService {
       user,
     });
 
-    return this.postRepository.save(post);
+    const newPost = await this.postRepository.save(post);
+
+    await this.notificationsQueue.add('notify-subscribers', {
+      postId: newPost.id,
+    });
+    console.log(
+      `📤 Enqueued 'notify-subscribers' job for new post ID: ${newPost.id}`,
+    );
+
+    return post;
   }
 
   // GET ALL

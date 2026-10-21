@@ -1,3 +1,4 @@
+import { Comment } from 'src/comment/entities/comment.entity';
 import { User } from '../../user/entities/user.entity';
 import {
   Entity,
@@ -31,4 +32,7 @@ export class Post {
   })
   @JoinColumn({ name: 'user_id' })
   user!: User;
+
+  @ManyToOne(() => Comment, (comment: Comment) => comment.post)
+  comments?: Comment[];
 }

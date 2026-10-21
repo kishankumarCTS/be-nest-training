@@ -7,6 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import Joi from 'joi';
+import { BullModule } from '@nestjs/bullmq';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -37,9 +39,16 @@ import Joi from 'joi';
         logging: false,
       }),
     }),
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     UserModule,
     PostModule,
     HealthModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [
